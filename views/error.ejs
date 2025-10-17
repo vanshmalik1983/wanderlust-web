@@ -1,0 +1,10 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="row">
+  <div class="alert alert-danger col-6 offset-3 mt-5" role="alert">
+    <h4 class="alert-heading">An Error Occurred!</h4>
+    <p><%= err.message || "Something went wrong." %></p>
+    <hr>
+    <p class="mb-0">Status Code: <%= err.status || 500 %></p>
+  </div>
+</div>
