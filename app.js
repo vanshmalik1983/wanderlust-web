@@ -46,9 +46,11 @@ const store = MongoStore.create({
   },
   touchAfter : 24 * 3600,
 });
-store.on("ERROR" , ()=>{
-  console.log("ERROR IN MONGO" , err);
+
+store.on("error", (err) => {
+  console.log("ERROR IN MONGO", err);
 });
+
 
 const sessionOptions = {
     store,
@@ -64,9 +66,10 @@ const sessionOptions = {
 
 
 
-// app.get("/", (req, res) => {
-//   res.send("Hi, I am root");
-// });
+app.get('/', (req, res) => {
+  res.redirect('/listings');
+});
+
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -93,6 +96,8 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error.ejs", { err });
 });
 
-app.listen(8080, () => {
-  console.log("server is listening to port 8080");
+const port = process.env.PORT || 8080;
+
+app.listen(port, () => {
+  console.log(`server is listening on port ${port}`);
 });
