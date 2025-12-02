@@ -1,118 +1,72 @@
-const Listing = require("../models/listing");
+const Listing = require("../models/listing.js");
+const { cloudinary } = require("../cloudConfig.js");
 
-// 🟢 Show all listings
+// INDEX - list all listings
 module.exports.index = async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("listings/index.ejs", { allListings });
+  const listings = await Listing.find({});
+  res.render("listings/index", { listings });
 };
 
-// 🟢 Render NEW form
+// NEW FORM
 module.exports.renderNewForm = (req, res) => {
-  res.render("listings/new.ejs");
+  res.render("listings/new");
 };
 
-// 🟢 Show ONE listing
-module.exports.showListing = async (req, res) => {
-  const { id } = req.params;
+// CREATE LISTING
+module.exports.createListings = async (req, res) => {
+  const listing = new Listing(req.body.listing);
+  listing.owner = req.user._id;
 
-  const listing = await Listing.findById(id)
-    .populate("owner")
+  await listing.save();
+  req.flash("success", "Successfully created a new listing!");
+  res.redirect(`/listings/${listing._id}`);
+};
+
+// SHOW LISTING
+module.exports.showListing = async (req, res) => {
+  const listing = await Listing.findById(req.params.id)
     .populate({
       path: "reviews",
-      populate: { path: "author" }
-    });
+      populate: { path: "owner" }
+    })
+    .populate("owner");
 
   if (!listing) {
-    req.flash("error", "No listing found!");
+    req.flash("error", "Cannot find that listing");
     return res.redirect("/listings");
   }
-
-  res.render("listings/show.ejs", { listing, currUser: req.user });
+  res.render("listings/show", { listing });
 };
 
-// 🟢 Create Listing
-module.exports.createListings = async (req, res) => {
-  const newListing = new Listing(req.body.listing);
-
-  // Add owner
-  newListing.owner = req.user._id;
-
-  // Add image (Cloudinary)
-  if (req.file) {
-    newListing.image = {
-      url: req.file.path,
-      filename: req.file.filename,
-    };
-  }
-
-  await newListing.save();
-
-  req.flash("success", "New listing created!");
-  res.redirect(`/listings/${newListing._id}`);
-};
-
-// 🟢 Render EDIT form
+// EDIT FORM
 module.exports.renderEdit = async (req, res) => {
-  const { id } = req.params;
-  const listing = await Listing.findById(id);
-
+  const listing = await Listing.findById(req.params.id);
   if (!listing) {
-    req.flash("error", "Listing not found");
+    req.flash("error", "Cannot find that listing");
     return res.redirect("/listings");
   }
-
-  if (!listing.owner.equals(req.user._id)) {
-    req.flash("error", "You don't have permission to edit this listing.");
-    return res.redirect(`/listings/${id}`);
-  }
-
-  // Thumbnail for preview
-  let original = listing.image.url;
-  listing.thumbnail = original.replace("/upload", "/upload/w_300");
-
-  res.render("listings/edit.ejs", { listing });
+  res.render("listings/edit", { listing });
 };
 
-// 🟢 Update Listing
+// UPDATE LISTING
 module.exports.updateListings = async (req, res) => {
   const { id } = req.params;
+  const listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
 
-  let listing = await Listing.findById(id);
-
-  if (!listing.owner.equals(req.user._id)) {
-    req.flash("error", "You don't have permission to update this listing.");
-    return res.redirect(`/listings/${id}`);
+  if (req.files && req.files.length > 0) {
+    const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));
+    listing.images.push(...imgs);
   }
 
-  // Update text fields
-  await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-
-  // If new image uploaded
-  if (req.file) {
-    listing.image = {
-      url: req.file.path,
-      filename: req.file.filename,
-    };
-    await listing.save();
-  }
-
-  req.flash("success", "Listing updated successfully!");
-  res.redirect(`/listings/${id}`);
+  await listing.save();
+  req.flash("success", "Successfully updated listing!");
+  res.redirect(`/listings/${listing._id}`);
 };
 
-// 🟢 Delete Listing
+// DELETE LISTING
 module.exports.destroyListing = async (req, res) => {
   const { id } = req.params;
-
-  const listing = await Listing.findById(id);
-
-  if (!listing.owner.equals(req.user._id)) {
-    req.flash("error", "You don't have permission to delete this listing.");
-    return res.redirect(`/listings/${id}`);
-  }
-
   await Listing.findByIdAndDelete(id);
-
-  req.flash("success", "Listing deleted.");
+  req.flash("success", "Listing deleted successfully!");
   res.redirect("/listings");
 };
