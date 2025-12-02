@@ -4,7 +4,7 @@ const { cloudinary } = require("../cloudConfig.js");
 // INDEX - list all listings
 module.exports.index = async (req, res) => {
   const listings = await Listing.find({});
-  res.render("listings/index", { listings });
+  res.render("listings/index", { allListings: listings }); // pass as allListings to match EJS
 };
 
 // NEW FORM
@@ -17,6 +17,14 @@ module.exports.createListings = async (req, res) => {
   const listing = new Listing(req.body.listing);
   listing.owner = req.user._id;
 
+  // If multer uploaded a file
+  if (req.file) {
+    listing.image = {
+      url: req.file.path,
+      filename: req.file.filename
+    };
+  }
+
   await listing.save();
   req.flash("success", "Successfully created a new listing!");
   res.redirect(`/listings/${listing._id}`);
@@ -27,7 +35,7 @@ module.exports.showListing = async (req, res) => {
   const listing = await Listing.findById(req.params.id)
     .populate({
       path: "reviews",
-      populate: { path: "owner" }
+      populate: { path: "author" } // must match your review schema
     })
     .populate("owner");
 
@@ -51,11 +59,18 @@ module.exports.renderEdit = async (req, res) => {
 // UPDATE LISTING
 module.exports.updateListings = async (req, res) => {
   const { id } = req.params;
-  const listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
+  const listing = await Listing.findByIdAndUpdate(
+    id,
+    { ...req.body.listing },
+    { new: true }
+  );
 
-  if (req.files && req.files.length > 0) {
-    const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));
-    listing.images.push(...imgs);
+  // Update image if a new file is uploaded
+  if (req.file) {
+    listing.image = {
+      url: req.file.path,
+      filename: req.file.filename
+    };
   }
 
   await listing.save();
