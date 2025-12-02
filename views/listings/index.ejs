@@ -41,11 +41,11 @@
   </div>
   <div class="filter">
     <div><i class="fa-solid fa-hotel"></i></div>
-    <p>rooms</p>
+    <p>Rooms</p>
   </div>
   <div class="filter">
     <div><i class="fa-solid fa-mountain-city"></i></div>
-    <p>iconic cities</p>
+    <p>Iconic Cities</p>
   </div>
   <div class="filter">
     <div><i class="fa-solid fa-mountain"></i></div>
@@ -63,22 +63,6 @@
     <div><i class="fa-solid fa-campground"></i></div>
     <p>Camping</p>
   </div>
-  <div class="filter">
-    <div><i class="fa-solid fa-snowflake"></i></div>
-    <p>Artic</p>
-  </div>
-  <div class="filter">
-    <div><i class="fa-solid fa-tractor"></i></div>
-    <p>Farms</p>
-  </div>
-  <div class="filter">
-    <div><i class="fa-solid fa-igloo"></i></div>
-    <p>Dome</p>
-  </div>
-  <div class="filter">
-    <div><i class="fa-solid fa-sailboat"></i></div>
-    <p>Boats</p>
-  </div>
 
   <div class="tax-toggle">
     <div class="form-check-reverse form-switch">
@@ -93,7 +77,7 @@
     <a href="/listings/<%= listing._id %>" class="listen">
       <div class="card listing-class col" style="width: 20rem;">
         <% if (listing.images && listing.images.length > 0) { %>
-          <img src="<%= listing.images[0].url %>" class="card-img-top" alt="listingimg" style="height: 20rem; width: 18rem;">
+          <img src="<%= listing.images[0].url %>" class="card-img-top" alt="Listing Image" style="height: 20rem; width: 18rem;">
         <% } else { %>
           <img src="/images/placeholder.jpg" class="card-img-top" alt="No image" style="height: 20rem; width: 18rem;">
         <% } %>
