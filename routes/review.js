@@ -11,19 +11,17 @@ const Review = require("../models/review.js");
 const { isLoggedIn } = require("../middleware.js");
 const reviewController = require("../controllers/reviews.js");
 
-
 // Validate Review
 const validateReview = (req, res, next) => {
   const { error } = reviewSchema.validate(req.body);
   if (error) {
-    const errMsg = error.details.map(el => el.message).join(", ");
-    throw new ExpressError(400, errMsg);
+    const errMsg = error.details.map((el) => el.message).join(", ");
+    return next(new ExpressError(400, errMsg)); // ⭐ safer
   }
   next();
 };
 
-
-// Review Routes
+// REVIEW ROUTES
 router.post(
   "/",
   isLoggedIn,

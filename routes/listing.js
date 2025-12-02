@@ -11,23 +11,26 @@ const multer = require("multer");
 const { storage } = require("../cloudConfig.js");
 const upload = multer({ storage });
 
-
-// Validate Listing
+// ⭐ FIXED validateListing ⭐
 const validateListing = (req, res, next) => {
-  if (req.body.listing && typeof req.body.listing.image === "string") {
-    req.body.listing.image = { url: req.body.listing.image };
+  // If multer uploaded a file, attach it into the listing object
+  if (req.file) {
+    req.body.listing.image = {
+      url: req.file.path,
+      filename: req.file.filename,
+    };
   }
 
   const { error } = listingSchema.validate(req.body);
   if (error) {
     const errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } 
+    return next(new ExpressError(400, errMsg)); // ⭐ Important!
+  }
+
   next();
 };
 
-
-// Routes
+// ROUTES
 router
   .route("/")
   .get(wrapAsync(listingController.index))
